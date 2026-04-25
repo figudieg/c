@@ -18,9 +18,8 @@ export class AuthService {
   constructor(private api: ApiClientService) {}
 
   async login(email: string, password: string): Promise<AuthUser> {
-    const res = await fetch('http://localhost:8000/api/auth/login/', {
+    const res = await this.api.apiFetch('/api/auth/login/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
@@ -64,7 +63,7 @@ export class AuthService {
         this.api.clearTokens();
         return null;
       }
-      const user = await res.json() as AuthUser;
+      const user = (await res.json()) as AuthUser;
       this.currentUserSubject.next(user);
       return user;
     } catch {

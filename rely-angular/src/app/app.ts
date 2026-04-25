@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
 import { ViewType } from './components/navigation/navigation.component';
 
@@ -9,16 +11,37 @@ import { ViewType } from './components/navigation/navigation.component';
   standalone: false,
   styleUrl: './app.css',
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   isAuth = false;
   userEmail = '';
   isLoginOpen = false;
+  currentView: ViewType = 'home';
+
+  private routerSub?: Subscription;
 
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    if (!this.authService.isAuthenticated()) return;
+    // Track route changes reactively
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        const url = (e as NavigationEnd).urlAfterRedirects;
+        if (url.startsWith('/ventas')) this.currentView = 'sales';
+        else if (url.startsWith('/ordenes')) this.currentView = 'orders';
+        else if (url.startsWith('/tracking')) this.currentView = 'tracking';
+        else this.currentView = 'home';
+      });
 
+    // Set initial view
+    const url = this.router.url;
+    if (url.startsWith('/ventas')) this.currentView = 'sales';
+    else if (url.startsWith('/ordenes')) this.currentView = 'orders';
+    else if (url.startsWith('/tracking')) this.currentView = 'tracking';
+    else this.currentView = 'home';
+
+    // Restore session
+    if (!this.authService.isAuthenticated()) return;
     this.authService.getCurrentUser().then((user) => {
       if (user) {
         this.isAuth = true;
@@ -27,12 +50,8 @@ export class App implements OnInit {
     });
   }
 
-  get currentView(): ViewType {
-    const url = this.router.url;
-    if (url.startsWith('/ventas')) return 'sales';
-    if (url.startsWith('/ordenes')) return 'orders';
-    if (url.startsWith('/tracking')) return 'tracking';
-    return 'home';
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
   }
 
   handleViewChange(view: ViewType): void {
@@ -40,13 +59,13 @@ export class App implements OnInit {
       this.isLoginOpen = true;
       return;
     }
-    const routes: Record<string, string> = {
+    const routes: Record<ViewType, string> = {
       home: '/',
       sales: '/ventas',
       orders: '/ordenes',
       tracking: '/tracking',
     };
-    this.router.navigate([routes[view] || '/']);
+    this.router.navigate([routes[view]]);
   }
 
   handleLoginSuccess(email: string): void {
