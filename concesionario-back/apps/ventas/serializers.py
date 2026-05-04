@@ -38,17 +38,18 @@ class OrdenVentaCreateSerializer(serializers.Serializer):
 
 
 class OrdenVentaSerializer(serializers.ModelSerializer):
-    """Serializer de lectura — respuesta al frontend."""
+    cliente_nombre = serializers.ReadOnlyField(source='cliente.nombre_completo')
+    cliente_identificacion = serializers.ReadOnlyField(source='cliente.identificacion')
     vendedor_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = OrdenVenta
         fields = [
-            'id', 'vendedor_nombre', 'cliente_nombre', 'cliente_email',
-            'cliente_telefono', 'referencia', 'precio', 'modelo_vehiculo',
-            'year_vehiculo', 'color', 'metodo_pago', 'notas', 'estado', 'created_at',
+            'id', 'referencia', 'precio', 'estado', 'created_at',
+            'cliente_nombre', 'cliente_identificacion', 'vendedor_nombre',
+            'modelo_vehiculo', 'year_vehiculo', 'color', 'metodo_pago', 'notas'
         ]
 
     def get_vendedor_nombre(self, obj):
         nombre = f"{obj.vendedor.first_name} {obj.vendedor.last_name}".strip()
-        return nombre or obj.vendedor.username
+        return nombre if nombre else obj.vendedor.username
