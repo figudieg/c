@@ -38,18 +38,26 @@ class OrdenVentaCreateSerializer(serializers.Serializer):
 
 
 class OrdenVentaSerializer(serializers.ModelSerializer):
+    # Información del Cliente y Vendedor
     cliente_nombre = serializers.ReadOnlyField(source='cliente.nombre_completo')
-    cliente_identificacion = serializers.ReadOnlyField(source='cliente.identificacion')
     vendedor_nombre = serializers.SerializerMethodField()
+    
+    # Información disponible en la tabla vehiculo_nuevo (según tu imagen)
+    vin_vehiculo = serializers.ReadOnlyField(source='vehiculo.vin')
+    color_vehiculo = serializers.ReadOnlyField(source='vehiculo.color_exterior')
+    precio_sugerido = serializers.ReadOnlyField(source='vehiculo.precio_lista_sugerido')
+    estado_vehiculo = serializers.ReadOnlyField(source='vehiculo.estado')
 
     class Meta:
         model = OrdenVenta
+        # Solo ponemos campos que existen en el modelo o definimos arriba
         fields = [
             'id', 'referencia', 'precio', 'estado', 'created_at',
-            'cliente_nombre', 'cliente_identificacion', 'vendedor_nombre',
-            'modelo_vehiculo', 'year_vehiculo', 'color', 'metodo_pago', 'notas'
+            'cliente_nombre', 'vendedor_nombre', 
+            'vin_vehiculo', 'color_vehiculo', 'precio_sugerido', 'estado_vehiculo'
         ]
 
     def get_vendedor_nombre(self, obj):
+        # Concatenamos nombre y apellido del vendedor si existen
         nombre = f"{obj.vendedor.first_name} {obj.vendedor.last_name}".strip()
         return nombre if nombre else obj.vendedor.username
