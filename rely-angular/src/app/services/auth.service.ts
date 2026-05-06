@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 
@@ -15,7 +16,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private api: ApiClientService) {}
+  constructor(private api: ApiClientService, private router: Router) {}
 
   async login(email: string, password: string): Promise<AuthUser> {
     const res = await this.api.apiFetch('/api/auth/login/', {
@@ -46,9 +47,12 @@ export class AuthService {
         method: 'POST',
         body: JSON.stringify({ refresh }),
       });
+    } catch {
+      // Si falla el logout en el servidor igual limpiamos localmente
     } finally {
       this.api.clearTokens();
       this.currentUserSubject.next(null);
+      this.router.navigate(['/']); // ← Siempre redirige al home
     }
   }
 
@@ -61,6 +65,7 @@ export class AuthService {
       const res = await this.api.apiFetch('/api/auth/me/');
       if (!res.ok) {
         this.api.clearTokens();
+        this.currentUserSubject.next(null);
         return null;
       }
       const user = (await res.json()) as AuthUser;
