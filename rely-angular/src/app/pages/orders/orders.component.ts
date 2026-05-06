@@ -93,4 +93,18 @@ export class OrdersComponent implements OnInit {
     };
     return classes[estado] || 'bg-gray-800 text-gray-400 border-gray-700';
   }
+
+  get totalVentas(): number {
+    return this.orders.reduce((sum, o) => sum + (parseFloat(o.precio) || 0), 0);
+  }
+
+  get ordenesHoy(): number {
+    const hoy = new Date().toDateString();
+    return this.orders.filter(o => new Date(o.created_at).toDateString() === hoy).length;
+  }
+
+  get promedio(): number {
+    if (!this.orders.length) return 0;
+    return this.totalVentas / this.orders.length;
+  }
 }
