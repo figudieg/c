@@ -62,6 +62,10 @@ export class OrdersComponent implements OnInit {
     }
   }
 
+  parseFloatValue(value: string | number): number {
+  return typeof value === 'string' ? parseFloat(value) : value;
+}
+
   onSearch(term: string): void {
     this.searchTerm = term;
     if (!term.trim()) {

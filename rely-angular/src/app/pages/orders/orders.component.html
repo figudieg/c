@@ -292,7 +292,7 @@
           </div>
           <div>
             <p class="text-gray-500 text-xs mb-0.5">Restante</p>
-            <p [class]="parseFloat(selectedOrder.transaccion.monto_restante) > 0 ? 'text-yellow-400' : 'text-emerald-400'">
+            <p [class]="parseFloatValue(selectedOrder.transaccion.monto_restante) > 0 ? 'text-yellow-400' : 'text-emerald-400'">
               {{ formatPrice(selectedOrder.transaccion.monto_restante) }}
             </p>
           </div>
