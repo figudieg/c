@@ -50,10 +50,14 @@ export class ApiClientService {
     const token = this.getAccessToken();
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...((options.headers as Record<string, string>) || {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
+
+    // No establecer Content-Type para FormData (el navegador lo hace automáticamente)
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     let res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
 
