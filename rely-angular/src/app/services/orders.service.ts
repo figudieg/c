@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 
-// ============================================
-// INTERFACES PARA EL MÓDULO DE ÓRDENES (ORDERS)
-// ============================================
-
 export interface TransaccionPago {
   id: number;
   monto: string;
@@ -17,7 +13,6 @@ export interface TransaccionPago {
   estado_pago: number;
 }
 
-// Interfaz que coincide con lo que devuelve el backend
 interface OrdenVentaAPI {
   id: number;
   codigo_orden: string;
@@ -34,12 +29,12 @@ interface OrdenVentaAPI {
   estado_orden: number;
 }
 
-// Interfaz que usa el componente (ya tienes esta)
 export interface OrdenVenta {
   id: number;
   referencia: string;
   precio: string;
   estado: string;
+  estadoId: number;
   created_at: string;
   cliente_nombre: string;
   cliente_email: string;
@@ -48,6 +43,7 @@ export interface OrdenVenta {
   vin_vehiculo: string;
   color_vehiculo: string;
   modelo_vehiculo: string;
+  transaccion: TransaccionPago | null;
 }
 
 export interface CreateOrdenPayload {
@@ -73,28 +69,28 @@ interface ApiResponse<T> {
   total?: number;
 }
 
+const ESTADO_LABELS: Record<number, string> = {
+  1: 'Pendiente',
+  2: 'Aprobada',
+  3: 'Completada',
+  4: 'Cancelada',
+};
+
 @Injectable({ providedIn: 'root' })
 export class VentasService {
   constructor(private api: ApiClientService) {}
 
-  // Mapea estados numéricos a texto
   private mapEstado(estado: number): string {
-    const estados: Record<number, string> = {
-      1: 'Pendiente',
-      2: 'Aprobada',
-      3: 'Completada',
-      4: 'Cancelada',
-    };
-    return estados[estado] || 'Pendiente';
+    return ESTADO_LABELS[estado] || 'Pendiente';
   }
 
-  // Mapea la respuesta de la API al formato del componente
   private mapOrden(apiOrden: OrdenVentaAPI): OrdenVenta {
     return {
       id: apiOrden.id,
       referencia: apiOrden.codigo_orden,
       precio: apiOrden.precio_final_venta,
       estado: this.mapEstado(apiOrden.estado_orden),
+      estadoId: apiOrden.estado_orden,
       created_at: apiOrden.fecha_creacion,
       cliente_nombre: apiOrden.cliente_nombre,
       cliente_email: apiOrden.cliente_email,
@@ -103,40 +99,38 @@ export class VentasService {
       vin_vehiculo: apiOrden.vehiculo_vin,
       color_vehiculo: apiOrden.vehiculo_color,
       modelo_vehiculo: apiOrden.vehiculo_modelo,
+      transaccion: apiOrden.transaccion_info,
     };
   }
 
   async getOrders(): Promise<OrdenVenta[]> {
-    try {
-      const res = await this.api.apiFetch('/api/ventas/ordenes/');
-      const response: ApiResponse<OrdenVentaAPI[]> = await res.json();
-      
-      if (!res.ok || !response.success) {
-        throw new Error(response.detail || 'Error al cargar las órdenes');
-      }
-      
-      // Mapea todos los datos al formato que espera el componente
-      return (response.data || []).map(item => this.mapOrden(item));
-    } catch (error) {
-      console.error('Error en getOrders:', error);
-      throw error;
+    const res = await this.api.apiFetch('/api/ventas/ordenes/');
+    const response: ApiResponse<OrdenVentaAPI[]> = await res.json();
+    if (!res.ok || !response.success) {
+      throw new Error(response.detail || 'Error al cargar las órdenes');
     }
+    return (response.data || []).map(item => this.mapOrden(item));
   }
 
   async getOrderById(id: number): Promise<OrdenVenta> {
-    try {
-      const res = await this.api.apiFetch(`/api/ventas/ordenes/${id}/`);
-      const response: ApiResponse<OrdenVentaAPI> = await res.json();
-      
-      if (!res.ok || !response.success || !response.data) {
-        throw new Error(response.detail || 'Orden no encontrada');
-      }
-      
-      return this.mapOrden(response.data);
-    } catch (error) {
-      console.error(`Error en getOrderById(${id}):`, error);
-      throw error;
+    const res = await this.api.apiFetch(`/api/ventas/ordenes/${id}/`);
+    const response: ApiResponse<OrdenVentaAPI> = await res.json();
+    if (!res.ok || !response.success || !response.data) {
+      throw new Error(response.detail || 'Orden no encontrada');
     }
+    return this.mapOrden(response.data);
+  }
+
+  async updateOrderStatus(id: number, estadoOrden: number): Promise<OrdenVenta> {
+    const res = await this.api.apiFetch(`/api/ventas/ordenes/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado_orden: estadoOrden }),
+    });
+    const response: ApiResponse<OrdenVentaAPI> = await res.json();
+    if (!res.ok || !response.success || !response.data) {
+      throw new Error(response.detail || 'Error al actualizar la orden');
+    }
+    return this.mapOrden(response.data);
   }
 
   async createOrder(payload: CreateOrdenPayload): Promise<OrdenVenta> {
@@ -144,9 +138,7 @@ export class VentasService {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-
     const data = await res.json();
-
     if (!res.ok) {
       const message =
         data.reference_number?.[0] ||
@@ -155,7 +147,6 @@ export class VentasService {
         'Error al registrar la venta';
       throw new Error(message);
     }
-
     return data as OrdenVenta;
   }
 }

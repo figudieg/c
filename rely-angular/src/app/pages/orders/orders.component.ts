@@ -1,5 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { VentasService, OrdenVenta } from '../../services/orders.service';
+
+export interface EstadoOpcion {
+  id: number;
+  label: string;
+  class: string;
+}
 
 @Component({
   standalone: false,
@@ -16,7 +22,22 @@ export class OrdersComponent implements OnInit {
   searchTerm = '';
   selectedOrder: OrdenVenta | null = null;
 
-  constructor(private ventasService: VentasService) {}
+  // Procesar orden
+  isProcesarOpen = false;
+  isUpdating = false;
+  procesarError = '';
+  nuevoEstadoId = 2;
+
+  readonly estadosDisponibles: EstadoOpcion[] = [
+    { id: 2, label: 'Aprobada',   class: 'text-blue-400' },
+    { id: 3, label: 'Completada', class: 'text-emerald-400' },
+    { id: 4, label: 'Cancelada',  class: 'text-red-400' },
+  ];
+
+  constructor(
+    private ventasService: VentasService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadOrders();
@@ -25,7 +46,6 @@ export class OrdersComponent implements OnInit {
   async loadOrders(): Promise<void> {
     this.isLoading = true;
     this.error = '';
-
     try {
       const data = await this.ventasService.getOrders();
       this.orders = data || [];
@@ -38,6 +58,7 @@ export class OrdersComponent implements OnInit {
     } finally {
       this.isLoading = false;
       this.isFirstLoad = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -62,7 +83,47 @@ export class OrdersComponent implements OnInit {
 
   closeDetail(): void {
     this.selectedOrder = null;
+    this.isProcesarOpen = false;
   }
+
+  openProcesar(): void {
+    if (!this.selectedOrder) return;
+    // Sugerir el siguiente estado lógico
+    const siguiente = (this.selectedOrder.estadoId || 1) + 1;
+    this.nuevoEstadoId = siguiente <= 3 ? siguiente : 4;
+    this.procesarError = '';
+    this.isProcesarOpen = true;
+  }
+
+  closeProcesar(): void {
+    this.isProcesarOpen = false;
+    this.procesarError = '';
+  }
+
+  async submitProcesar(): Promise<void> {
+    if (!this.selectedOrder) return;
+    this.isUpdating = true;
+    this.procesarError = '';
+    try {
+      const updated = await this.ventasService.updateOrderStatus(
+        this.selectedOrder.id,
+        this.nuevoEstadoId,
+      );
+      // Actualizar en ambas listas
+      this.orders = this.orders.map(o => o.id === updated.id ? updated : o);
+      this.filteredOrders = this.filteredOrders.map(o => o.id === updated.id ? updated : o);
+      this.selectedOrder = updated;
+      this.isProcesarOpen = false;
+      this.cdr.detectChanges();
+    } catch (err: any) {
+      this.procesarError = err.message || 'Error al procesar la orden';
+    } finally {
+      this.isUpdating = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────
 
   formatDate(dateStr: string): string {
     if (!dateStr) return '—';
@@ -76,7 +137,7 @@ export class OrdersComponent implements OnInit {
     const n = typeof price === 'string' ? parseFloat(price) : price;
     if (isNaN(n)) return '—';
     return new Intl.NumberFormat('en-US', {
-      style: 'currency', currency: 'USD', minimumFractionDigits: 2
+      style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     }).format(n);
   }
 
@@ -92,6 +153,15 @@ export class OrdersComponent implements OnInit {
       'Cancelada':  'bg-red-900/40 text-red-300 border-red-700/40',
     };
     return classes[estado] || 'bg-gray-800 text-gray-400 border-gray-700';
+  }
+
+  getMetodoPagoLabel(id: number): string {
+    const metodos: Record<number, string> = {
+      1: 'Efectivo', 2: 'Transferencia', 3: 'Financiamiento',
+      4: 'Tarjeta de Crédito', 5: 'Tarjeta de Débito',
+      6: 'Cheque', 7: 'Criptomoneda', 8: 'Otro',
+    };
+    return metodos[id] || `Método ${id}`;
   }
 
   get totalVentas(): number {

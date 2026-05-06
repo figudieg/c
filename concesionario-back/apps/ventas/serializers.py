@@ -240,6 +240,36 @@ class OrdenVentaCreateSerializer(serializers.Serializer):
         return orden
 
 
+class OrdenVentaUpdateSerializer(serializers.Serializer):
+    """Actualiza el estado de una orden y registra el cambio en el historial"""
+    estado_orden = serializers.IntegerField()
+
+    def validate_estado_orden(self, value):
+        from apps.catalogos.models import CtEstadoOrden
+        if not CtEstadoOrden.objects.filter(id=value).exists():
+            raise serializers.ValidationError('Estado de orden inválido')
+        return value
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        estado_anterior = instance.estado_orden
+        instance.estado_orden_id = validated_data['estado_orden']
+        instance.save()
+
+        try:
+            vendedor = self.context['request'].user.vendedor
+        except Exception:
+            vendedor = None
+
+        HistorialEstadosOrden.objects.create(
+            orden=instance,
+            estado_anterior=estado_anterior,
+            estado_nuevo_id=validated_data['estado_orden'],
+            responsable=vendedor,
+        )
+        return instance
+
+
 class OrdenVentaSerializer(serializers.ModelSerializer):
     """Serializer para listar/detallar órdenes de venta"""
     

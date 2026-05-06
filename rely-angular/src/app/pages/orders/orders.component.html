@@ -9,14 +9,16 @@
       </div>
       <button
         (click)="loadOrders()"
-        class="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+        [disabled]="isLoading"
+        class="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          [class.animate-spin]="isLoading">
           <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
         </svg>
-        Actualizar
+        {{ isLoading ? 'Cargando...' : 'Actualizar' }}
       </button>
     </div>
 
@@ -40,67 +42,48 @@
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-5">
         <div class="flex items-center gap-3">
-          <div class="bg-blue-600/20 p-3 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            </svg>
+          <div class="bg-blue-600/20 p-2.5 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
           <div>
-            <p class="text-gray-400 text-sm">Total Órdenes</p>
+            <p class="text-gray-400 text-xs">Total Órdenes</p>
             <p class="text-2xl font-bold text-white">{{ orders.length }}</p>
           </div>
         </div>
       </div>
-
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-5">
         <div class="flex items-center gap-3">
-          <div class="bg-green-600/20 p-3 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23"/>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
+          <div class="bg-green-600/20 p-2.5 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </div>
           <div>
-            <p class="text-gray-400 text-sm">Ventas Totales</p>
-            <p class="text-2xl font-bold text-white">{{ formatPrice(totalVentas) }}</p>
+            <p class="text-gray-400 text-xs">Ventas Totales</p>
+            <p class="text-xl font-bold text-white">{{ formatPrice(totalVentas) }}</p>
           </div>
         </div>
       </div>
-
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-5">
         <div class="flex items-center gap-3">
-          <div class="bg-yellow-600/20 p-3 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
+          <div class="bg-yellow-600/20 p-2.5 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
           <div>
-            <p class="text-gray-400 text-sm">Hoy</p>
+            <p class="text-gray-400 text-xs">Hoy</p>
             <p class="text-2xl font-bold text-white">{{ ordenesHoy }}</p>
           </div>
         </div>
       </div>
-
-      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
+      <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-5">
         <div class="flex items-center gap-3">
-          <div class="bg-orange-600/20 p-3 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
+          <div class="bg-orange-600/20 p-2.5 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div>
-            <p class="text-gray-400 text-sm">Promedio</p>
-            <p class="text-2xl font-bold text-white">{{ formatPrice(promedio) }}</p>
+            <p class="text-gray-400 text-xs">Promedio</p>
+            <p class="text-xl font-bold text-white">{{ formatPrice(promedio) }}</p>
           </div>
         </div>
       </div>
@@ -113,15 +96,14 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
       </svg>
-      <p class="text-red-300 text-sm">{{ error }}</p>
-      <button (click)="loadOrders()" class="ml-auto text-sm text-orange-400 hover:text-orange-300 underline transition">
+      <p class="text-red-300 text-sm flex-1">{{ error }}</p>
+      <button (click)="loadOrders()" class="text-sm text-orange-400 hover:text-orange-300 underline transition">
         Reintentar
       </button>
     </div>
 
     <!-- Tabla -->
     <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 overflow-hidden">
-
       <div class="p-6 border-b border-gray-700">
         <h3 class="text-xl font-bold text-white">
           Órdenes Recientes
@@ -129,18 +111,15 @@
         </h3>
       </div>
 
-      <!-- Loading skeleton -->
+      <!-- Skeleton -->
       <div *ngIf="isLoading" class="p-6 space-y-3">
-        <div *ngFor="let i of [1,2,3,4,5]"
-             class="h-14 bg-gray-900/60 rounded-xl animate-pulse">
-        </div>
+        <div *ngFor="let i of [1,2,3,4,5]" class="h-14 bg-gray-900/60 rounded-xl animate-pulse"></div>
       </div>
 
-      <!-- Empty state -->
+      <!-- Empty -->
       <div *ngIf="!isLoading && !error && filteredOrders.length === 0" class="p-16 text-center">
         <svg class="mx-auto text-gray-600 mb-4" xmlns="http://www.w3.org/2000/svg" width="48" height="48"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-          stroke-linecap="round" stroke-linejoin="round">
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
         </svg>
         <p class="text-gray-400">
@@ -179,18 +158,11 @@
               <td class="p-4 hidden md:table-cell">
                 <div class="space-y-1">
                   <div class="flex items-center gap-2 text-gray-400 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     {{ order.cliente_email }}
                   </div>
                   <div class="flex items-center gap-2 text-gray-400 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.56 4.41 2 2 0 0 1 3.53 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.56 4.41 2 2 0 0 1 3.53 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     {{ order.cliente_telefono || '—' }}
                   </div>
                 </div>
@@ -227,8 +199,10 @@
   </div>
 </div>
 
-<!-- Modal de Detalle -->
-<div *ngIf="selectedOrder"
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: DETALLE DE ORDEN
+══════════════════════════════════════════════════════════ -->
+<div *ngIf="selectedOrder && !isProcesarOpen"
      class="fixed inset-0 z-50 flex items-center justify-center p-4"
      (click)="closeDetail()">
 
@@ -252,7 +226,7 @@
     </div>
 
     <!-- Cuerpo -->
-    <div class="px-6 py-5 space-y-4">
+    <div class="px-6 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
 
       <!-- Estado + Fecha -->
       <div class="flex items-center justify-between">
@@ -300,6 +274,39 @@
         </div>
       </div>
 
+      <!-- Pago -->
+      <div *ngIf="selectedOrder.transaccion" class="bg-gray-800/50 rounded-xl p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Pago</p>
+        <div class="grid grid-cols-2 gap-y-3 text-sm">
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Método</p>
+            <p class="text-white">{{ getMetodoPagoLabel(selectedOrder.transaccion.metodo_pago) }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Referencia</p>
+            <p class="text-white font-mono text-xs">{{ selectedOrder.transaccion.referencia }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Monto inicial</p>
+            <p class="text-white">{{ formatPrice(selectedOrder.transaccion.monto_inicial) }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Restante</p>
+            <p [class]="parseFloat(selectedOrder.transaccion.monto_restante) > 0 ? 'text-yellow-400' : 'text-emerald-400'">
+              {{ formatPrice(selectedOrder.transaccion.monto_restante) }}
+            </p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Moneda</p>
+            <p class="text-white">{{ selectedOrder.transaccion.moneda }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs mb-0.5">Fecha pago</p>
+            <p class="text-white">{{ formatDate(selectedOrder.transaccion.fecha_pago) }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Precio + Vendedor -->
       <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3">
         <div>
@@ -315,13 +322,124 @@
     </div>
 
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-800 flex gap-3 justify-end">
-      <button class="flex-1 bg-orange-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+    <div class="px-6 py-4 border-t border-gray-800 flex gap-3">
+      <button
+        *ngIf="selectedOrder.estadoId !== 3 && selectedOrder.estadoId !== 4"
+        (click)="openProcesar()"
+        class="flex-1 bg-orange-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+      >
         Procesar Orden
       </button>
       <button (click)="closeDetail()"
-              class="px-5 py-2.5 text-sm text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg transition">
+              class="flex-1 py-2.5 text-sm text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg transition">
         Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: PROCESAR ORDEN
+══════════════════════════════════════════════════════════ -->
+<div *ngIf="selectedOrder && isProcesarOpen"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     (click)="closeProcesar()">
+
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+
+  <div class="relative bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl"
+       (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-800">
+      <div>
+        <h2 class="text-white font-semibold text-lg">Procesar Orden</h2>
+        <p class="text-orange-500 font-mono text-sm mt-0.5">#{{ selectedOrder.referencia }}</p>
+      </div>
+      <button (click)="closeProcesar()"
+              class="text-gray-500 hover:text-white transition p-1 rounded-lg hover:bg-gray-800">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="px-6 py-5 space-y-5">
+
+      <!-- Resumen compacto -->
+      <div class="bg-gray-800/50 rounded-xl p-4 space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Cliente</span>
+          <span class="text-white font-medium">{{ selectedOrder.cliente_nombre }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Vehículo</span>
+          <span class="text-gray-300">{{ selectedOrder.modelo_vehiculo }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Precio</span>
+          <span class="text-green-400 font-bold">{{ formatPrice(selectedOrder.precio) }}</span>
+        </div>
+        <div class="flex justify-between items-center pt-1 border-t border-gray-700">
+          <span class="text-gray-500">Estado actual</span>
+          <span [class]="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ' + getEstadoClass(selectedOrder.estado)">
+            {{ getEstadoLabel(selectedOrder.estado) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Selector de nuevo estado -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-3">Cambiar estado a:</label>
+        <div class="space-y-2">
+          <label
+            *ngFor="let opcion of estadosDisponibles"
+            [class]="'flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ' +
+              (nuevoEstadoId === opcion.id
+                ? 'border-orange-500 bg-orange-600/10'
+                : 'border-gray-700 hover:border-gray-500 bg-gray-800/30')"
+          >
+            <input
+              type="radio"
+              name="nuevoEstado"
+              [value]="opcion.id"
+              [(ngModel)]="nuevoEstadoId"
+              class="accent-orange-500"
+            />
+            <span [class]="'font-medium text-sm ' + opcion.class">{{ opcion.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="procesarError"
+           class="flex items-center gap-2 bg-red-900/30 border border-red-500/30 rounded-lg px-4 py-3">
+        <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/>
+        </svg>
+        <p class="text-red-300 text-sm">{{ procesarError }}</p>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-gray-800 flex gap-3">
+      <button
+        (click)="submitProcesar()"
+        [disabled]="isUpdating"
+        class="flex-1 flex items-center justify-center gap-2 bg-orange-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-orange-700 disabled:opacity-60 transition-colors"
+      >
+        <svg *ngIf="isUpdating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+        {{ isUpdating ? 'Procesando...' : 'Confirmar cambio' }}
+      </button>
+      <button (click)="closeProcesar()" [disabled]="isUpdating"
+              class="flex-1 py-2.5 text-sm text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg transition disabled:opacity-60">
+        Cancelar
       </button>
     </div>
 
