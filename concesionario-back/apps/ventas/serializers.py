@@ -4,17 +4,12 @@ from .models import OrdenVenta
 
 class OrdenVentaCreateSerializer(serializers.Serializer):
     """Recibe los campos tal como los envía el frontend (carr)."""
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
-    phone = serializers.CharField(max_length=20)
     reference_number = serializers.CharField(max_length=100)
     price = serializers.DecimalField(max_digits=12, decimal_places=2)
-    vehicleModel = serializers.CharField(max_length=100)
-    vehicleYear = serializers.IntegerField(required=False, allow_null=True)
-    vehicleColor = serializers.CharField(max_length=50)
-    paymentMethod = serializers.CharField(max_length=50)
-    notes = serializers.CharField(required=False, allow_blank=True, default='')
+    # Estos campos vienen del front, pero NO se guardan en OrdenVenta
+    # porque la tabla de Dayrom no los tiene.
+    cliente_id = serializers.IntegerField() 
+    vehiculo_id = serializers.IntegerField()
 
     def validate_reference_number(self, value):
         if OrdenVenta.objects.filter(referencia=value).exists():
@@ -22,39 +17,32 @@ class OrdenVentaCreateSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
+        # SOLO guardamos lo que el modelo OrdenVenta permite
         return OrdenVenta.objects.create(
             vendedor=self.context['request'].user,
-            cliente_nombre=f"{validated_data['first_name']} {validated_data['last_name']}",
-            cliente_email=validated_data['email'],
-            cliente_telefono=validated_data['phone'],
+            cliente_id=validated_data['cliente_id'],
+            vehiculo_id=validated_data['vehiculo_id'],
             referencia=validated_data['reference_number'],
             precio=validated_data['price'],
-            modelo_vehiculo=validated_data['vehicleModel'],
-            year_vehiculo=validated_data.get('vehicleYear'),
-            color=validated_data['vehicleColor'],
-            metodo_pago=validated_data['paymentMethod'],
-            notas=validated_data.get('notes', ''),
+            estado='Pendiente'
         )
 
-
 class OrdenVentaSerializer(serializers.ModelSerializer):
-    # Información del Cliente y Vendedor
     cliente_nombre = serializers.ReadOnlyField(source='cliente.nombre_completo')
+    # TRAEMOS LOS DATOS DEL CLIENTE DESDE LA RELACIÓN
+    cliente_email = serializers.ReadOnlyField(source='cliente.correo') 
+    cliente_telefono = serializers.ReadOnlyField(source='cliente.telefono_1')
     vendedor_nombre = serializers.SerializerMethodField()
-    
-    # Información disponible en la tabla vehiculo_nuevo (según tu imagen)
     vin_vehiculo = serializers.ReadOnlyField(source='vehiculo.vin')
     color_vehiculo = serializers.ReadOnlyField(source='vehiculo.color_exterior')
-    precio_sugerido = serializers.ReadOnlyField(source='vehiculo.precio_lista_sugerido')
-    estado_vehiculo = serializers.ReadOnlyField(source='vehiculo.estado')
+    modelo_vehiculo = serializers.ReadOnlyField(source='vehiculo.version.nombre') 
 
     class Meta:
         model = OrdenVenta
-        # Solo ponemos campos que existen en el modelo o definimos arriba
         fields = [
             'id', 'referencia', 'precio', 'estado', 'created_at',
-            'cliente_nombre', 'vendedor_nombre', 
-            'vin_vehiculo', 'color_vehiculo', 'precio_sugerido', 'estado_vehiculo'
+            'cliente_nombre', 'cliente_email', 'cliente_telefono', # AGREGADOS
+            'vendedor_nombre', 'vin_vehiculo', 'color_vehiculo', 'modelo_vehiculo'
         ]
 
     def get_vendedor_nombre(self, obj):

@@ -3,19 +3,17 @@ import { ApiClientService } from './api-client.service';
 
 export interface OrdenVenta {
   id: number;
-  vendedor_nombre: string;
-  cliente_nombre: string;
-  cliente_email: string;
-  cliente_telefono: string;
   referencia: string;
   precio: string;
-  modelo_vehiculo: string;
-  year_vehiculo: number | null;
-  color: string;
-  metodo_pago: string;
-  notas: string;
   estado: string;
   created_at: string;
+  cliente_nombre: string;
+  cliente_email: string;    // AGREGAR
+  cliente_telefono: string; // AGREGAR
+  vendedor_nombre: string;
+  vin_vehiculo: string;
+  color_vehiculo: string;
+  modelo_vehiculo: string;
 }
 
 export interface CreateOrdenPayload {
