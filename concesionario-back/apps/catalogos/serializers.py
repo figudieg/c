@@ -30,3 +30,13 @@ class CtEstadoOrdenSerializer(serializers.ModelSerializer):
     class Meta:
         model = CtEstadoOrden
         fields = ['id', 'estado_orden']
+    
+class CtEstadoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CtEstadoPago
+        fields = ['id', 'estado_pago']
+    
+class CtMetodoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CtMetodoPago
+        fields = ['id', 'nombre', 'descripcion', 'activo']

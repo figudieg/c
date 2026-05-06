@@ -8,6 +8,7 @@ router.register(r'estado-vehiculo', EstadoVehiculoViewSet)
 router.register(r'estado-venezuela', EstadoVenezuelaViewSet)
 router.register(r'entidad-financiera', EntidadFinancieraViewSet)
 router.register(r'estado-orden', EstadoOrdenViewSet)
+router.register(r'metodo-pago', MetodoPagoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

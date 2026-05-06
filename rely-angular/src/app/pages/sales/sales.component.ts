@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { VentasService, CreateVentaPayload } from '../../services/ventas.service';
 import { VehicleService, VehiculoInventario } from '../../services/vehiculos.service';
-import { CatalogosService, Pais, EstadoVenezuela, EntidadFinanciera } from '../../services/catalogos.service';
+import { CatalogosService, Pais, EstadoVenezuela, EntidadFinanciera, MetodoPago  } from '../../services/catalogos.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -96,6 +96,7 @@ export class SalesComponent implements OnInit, OnDestroy {
   paises: Pais[] = [];
   estadosVenezuela: EstadoVenezuela[] = [];
   entidadesFinancieras: EntidadFinanciera[] = [];
+  metodosPago: MetodoPago[] = [];
   cargandoCatalogos = false;
 
   // Configuración de métodos de pago y monedas
@@ -202,14 +203,16 @@ export class SalesComponent implements OnInit, OnDestroy {
   private async cargarCatalogos(): Promise<void> {
     this.cargandoCatalogos = true;
     try {
-      const [paises, estados, entidades] = await Promise.all([
+      const [paises, estados, entidades, metodos] = await Promise.all([
         this.catalogosService.getPaises(),
         this.catalogosService.getEstadosVenezuela(),
         this.catalogosService.getEntidadesFinancieras(),
+        this.catalogosService.getMetodosPago(),
       ]);
       this.paises = paises || [];
       this.estadosVenezuela = estados || [];
       this.entidadesFinancieras = entidades || [];
+      this.metodosPago = metodos || [];
       console.log('✅ Catálogos cargados');
     } catch (error) {
       console.error('❌ Error catálogos:', error);
@@ -573,16 +576,22 @@ export class SalesComponent implements OnInit, OnDestroy {
   private validarMetodoPago(): boolean {
     const metodoPago = this.formData.metodoPago;
 
-    if (metodoPago === 'transferencia' && !this.formData.numeroCuenta?.trim()) {
-      this.error = 'Debe ingresar el número de cuenta para transferencias';
-      return false;
-    }
+      if (!this.formData.metodoPago || this.formData.metodoPago === '') {
+    this.error = 'Debe seleccionar un método de pago';
+    return false;
+  }
+  
+  // Validar campos específicos según método de pago (usando IDs)
+  if (this.formData.metodoPago === '2' && !this.formData.numeroCuenta) {
+    this.error = 'Debe ingresar el número de cuenta para transferencias';
+    return false;
+  }
 
-    if ((metodoPago === 'tarjeta_credito' || metodoPago === 'tarjeta_debito') && 
-        !this.formData.ultimosDigitosTarjeta?.trim()) {
-      this.error = 'Debe ingresar los últimos 4 dígitos de la tarjeta';
-      return false;
-    }
+  if ((this.formData.metodoPago === '4' || this.formData.metodoPago === '5') 
+      && !this.formData.ultimosDigitosTarjeta) {
+    this.error = 'Debe ingresar los últimos 4 dígitos de la tarjeta';
+    return false;
+  }
 
     // Validar formato de últimos 4 dígitos
     if (this.formData.ultimosDigitosTarjeta && !/^\d{4}$/.test(this.formData.ultimosDigitosTarjeta)) {
@@ -713,6 +722,12 @@ export class SalesComponent implements OnInit, OnDestroy {
       this.detectarCambios();
     }
   }
+
+  // En sales.component.ts
+getNombreMetodoPago(id: string): string {
+  const metodo = this.metodosPago.find(m => m.id.toString() === id);
+  return metodo ? metodo.nombre : id;
+}
 
   nuevaVenta(): void {
     this.formData = this.createEmptyForm();

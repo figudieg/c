@@ -534,16 +534,11 @@
         <svg class="absolute left-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         <select [(ngModel)]="formData.metodoPago" name="metodoPago"
           class="w-full pl-12 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white appearance-none focus:outline-none focus:border-orange-500 transition-colors cursor-pointer">
-          <option value="" disabled selected>Seleccione método de pago</option>
-          <option value="efectivo">Efectivo</option>
-          <option value="transferencia">Transferencia Bancaria</option>
-          <option value="financiamiento">Financiamiento</option>
-          <option value="tarjeta_credito">Tarjeta de Crédito</option>
-          <option value="tarjeta_debito">Tarjeta de Débito</option>
-          <option value="cheque">Cheque</option>
-          <option value="criptomoneda">Criptomoneda</option>
-          <option value="otro">Otro</option>
-        </select>
+    <option value="" disabled selected>Seleccionar método</option>
+    <option *ngFor="let metodo of metodosPago" [value]="metodo.id">
+      {{ metodo.nombre }}
+    </option>
+  </select>
         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
           <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
@@ -590,8 +585,8 @@
   </div>
 
   <!-- Cuotas y Plazo (si es financiamiento) -->
-  <div *ngIf="formData.metodoPago === 'financiamiento' || formData.metodoPago === 'tarjeta_credito'" 
-       class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div *ngIf="formData.metodoPago === '3' || formData.metodoPago === '4'" 
+     class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     <div>
       <label class="block text-sm font-medium text-gray-300 mb-2">Número de Cuotas</label>
       <div class="relative">
@@ -625,7 +620,7 @@
   </div>
 
   <!-- Número de Cuenta Bancaria (si es transferencia) -->
-  <div *ngIf="formData.metodoPago === 'transferencia'" class="mb-6">
+<div *ngIf="formData.metodoPago === '2'" class="mb-6">
     <label class="block text-sm font-medium text-gray-300 mb-2">Número de Cuenta Bancaria</label>
     <div class="relative">
       <svg class="absolute left-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -636,7 +631,7 @@
   </div>
 
   <!-- Últimos 4 dígitos de tarjeta (si es tarjeta) -->
-  <div *ngIf="formData.metodoPago === 'tarjeta_credito' || formData.metodoPago === 'tarjeta_debito'" class="mb-6">
+<div *ngIf="formData.metodoPago === '4' || formData.metodoPago === '5'" class="mb-6">
     <label class="block text-sm font-medium text-gray-300 mb-2">Últimos 4 Dígitos de la Tarjeta</label>
     <div class="relative">
       <svg class="absolute left-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
@@ -676,10 +671,13 @@
           ${{ ((formData.montoTotal || 0) - (formData.montoInicial || 0)) | number:'1.2-2' }} {{ formData.moneda }}
         </span>
       </div>
-      <div *ngIf="formData.metodoPago" class="flex justify-between">
-        <span class="text-gray-400">Método de Pago:</span>
-        <span class="text-white capitalize truncate ml-2">{{ formData.metodoPago.replace('_', ' ') }}</span>
-      </div>
+<div *ngIf="formData.metodoPago" 
+     class="flex justify-between text-sm pt-3 border-t border-gray-700/50">
+  <span class="text-gray-500">Método</span>
+  <span class="text-white">
+    {{ getNombreMetodoPago(formData.metodoPago) }}
+  </span>
+</div>
       <div *ngIf="formData.entidadFinanciera" class="flex justify-between">
         <span class="text-gray-400">Entidad:</span>
         <span class="text-white capitalize truncate ml-2">{{ formData.entidadFinanciera.replace(/_/g, ' ') }}</span>

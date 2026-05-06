@@ -25,3 +25,11 @@ class EntidadFinancieraViewSet(viewsets.ModelViewSet):
 class EstadoOrdenViewSet(viewsets.ModelViewSet):
     queryset = CtEstadoOrden.objects.all()
     serializer_class = CtEstadoOrdenSerializer
+
+class EstadoPagoViewSet(viewsets.ModelViewSet):
+    queryset = CtEstadoPago.objects.all()
+    serializer_class = CtEstadoPagoSerializer
+
+class MetodoPagoViewSet(viewsets.ModelViewSet):
+    queryset = CtMetodoPago.objects.all()
+    serializer_class = CtMetodoPagoSerializer

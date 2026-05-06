@@ -32,12 +32,19 @@ export interface EstadoVehiculo {
   estado: string;
 }
 
+export interface MetodoPago {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
   
   private paises: Pais[] = [];
   private estadosVenezuela: EstadoVenezuela[] = [];
   private entidadesFinancieras: EntidadFinanciera[] = [];
+   private metodosPago: MetodoPago[] = [];
 
   constructor(private api: ApiClientService) {}
 
@@ -123,11 +130,40 @@ export class CatalogosService {
   }
 
   /**
+   * Obtener métodos de pago desde el catálogo
+   */
+  async getMetodosPago(): Promise<MetodoPago[]> {
+    if (this.metodosPago.length > 0) {
+      return this.metodosPago;
+    }
+    
+    try {
+      const res = await this.api.apiFetch('/api/catalogos/metodo-pago/');
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        this.metodosPago = data;
+      } else if (data.results) {
+        this.metodosPago = data.results;
+      } else if (data.data) {
+        this.metodosPago = data.data;
+      }
+      
+      console.log('✅ Métodos de pago cargados:', this.metodosPago.length);
+      return this.metodosPago;
+    } catch (error) {
+      console.error('Error cargando métodos de pago:', error);
+      return [];
+    }
+  }
+
+  /**
    * Limpiar caché (útil al hacer logout)
    */
   clearCache(): void {
     this.paises = [];
     this.estadosVenezuela = [];
     this.entidadesFinancieras = [];
+    this.metodosPago = [];
   }
 }

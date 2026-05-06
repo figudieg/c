@@ -56,6 +56,7 @@ OWN_APPS = [
     'apps.repuestos',
     'apps.auditoria',
     'apps.postventa',
+    'apps.vendedores',
 ]
 
 INSTALLED_APPS = BASE_APPS + THIRD_APPS + OWN_APPS
@@ -116,11 +117,11 @@ WSGI_APPLICATION = 'concesionario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'concesionario',
+        'NAME': 'rely',
         'USER': 'postgres',
         'PASSWORD': '123',
         'HOST': '127.0.0.1',
-        'PORT': '5432'
+        'PORT': '5434'
     }
 }
 

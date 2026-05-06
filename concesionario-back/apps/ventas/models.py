@@ -3,21 +3,243 @@ from django.conf import settings
 
 
 class OrdenVenta(models.Model):
-    # Relaciones exactas del diagrama
-    vendedor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_column='vendedor_id')
-    cliente = models.ForeignKey('clientes.Cliente', on_delete=models.PROTECT, db_column='cliente_id')
-    vehiculo = models.ForeignKey('vehiculos.VehiculoNuevo', on_delete=models.PROTECT, db_column='vehiculo_id')
-
-    # Campos físicos que veo en tu tabla orden_venta
-    referencia = models.CharField(max_length=100, unique=True, db_column='codigo_orden')
-    precio = models.DecimalField(max_digits=12, decimal_places=2, db_column='precio_final_venta')
-    estado = models.CharField(max_length=20, default='Pendiente', db_column='estado_orden')
-    created_at = models.DateTimeField(auto_now_add=True, db_column='fecha_creacion')
+    vehiculo = models.ForeignKey(
+        'vehiculos.VehiculoNuevo',
+        on_delete=models.PROTECT,
+        db_column='vehiculo_id',
+        related_name='ordenes_venta'
+    )
+    cliente = models.ForeignKey(
+        'clientes.Cliente',
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='cliente_id',
+        related_name='ordenes_venta'
+    )
+    vendedor = models.ForeignKey(
+        'vendedores.Vendedor',  # Ahora sí existe la app vendedores
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='vendedor_id',
+        related_name='ordenes_venta'
+    )
+    estado_orden = models.ForeignKey(
+        'catalogos.CtEstadoOrden',  # Referencia correcta al modelo
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='estado_orden',
+        related_name='ordenes'
+    )
+    
+    codigo_orden = models.CharField(
+        max_length=100,
+        unique=True,
+        db_column='codigo_orden'
+    )
+    precio_final_venta = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        db_column='precio_final_venta'
+    )
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        db_column='fecha_creacion'
+    )
 
     class Meta:
-        managed = False  # ESTO evita que Django intente crear/borrar tablas
+        managed = False
         db_table = 'orden_venta'
-        ordering = ['-created_at']
-        
+        ordering = ['-fecha_creacion']
+        verbose_name = 'Orden de Venta'
+        verbose_name_plural = 'Órdenes de Venta'
+
     def __str__(self):
-        return f"#{self.referencia} - {self.cliente.nombre_completo}"
+        cliente_nombre = self.cliente.nombre_completo if self.cliente else 'Sin cliente'
+        return f"#{self.codigo_orden} - {cliente_nombre}"
+
+
+class TransaccionPago(models.Model):
+    orden_venta = models.ForeignKey(
+        OrdenVenta,
+        on_delete=models.PROTECT,
+        db_column='orden_venta_id',
+        related_name='transacciones_pago'
+    )
+    entidad_financiera = models.ForeignKey(
+        'catalogos.CtEntidadFinanciera',
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='entidad_financiera_id',
+        related_name='transacciones'
+    )
+    estado_pago = models.ForeignKey(
+        'catalogos.CtEstadoPago',  # Referencia correcta
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='estado_pago',
+        related_name='transacciones'
+    )
+    
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        db_column='monto'
+    )
+    monto_inicial = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        db_column='monto_inicial'
+    )
+    monto_restante = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        db_column='monto_restante'
+    )
+    moneda = models.CharField(
+        max_length=10,
+        null=True,
+        db_column='moneda'
+    )
+    tasa_cambio = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        db_column='tasa_cambio'
+    )
+    metodo_pago = models.IntegerField(
+        null=True,
+        db_column='metodo_pago'
+    )
+    referencia = models.CharField(
+        max_length=100,
+        unique=True,
+        db_column='referencia'
+    )
+    fecha_pago = models.DateTimeField(
+        null=True,
+        db_column='fecha_pago'
+    )
+    verificado_por = models.IntegerField(
+        null=True,
+        db_column='verificado_por'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'transaccion_pago'
+        ordering = ['-fecha_pago']
+        verbose_name = 'Transacción de Pago'
+        verbose_name_plural = 'Transacciones de Pago'
+
+    def __str__(self):
+        return f"Pago {self.referencia} - Orden #{self.orden_venta.codigo_orden}"
+
+
+class HistorialEstadosOrden(models.Model):
+    orden = models.ForeignKey(
+        OrdenVenta,
+        on_delete=models.PROTECT,
+        db_column='orden_id',
+        related_name='historial_estados'
+    )
+    estado_anterior = models.ForeignKey(
+        'catalogos.CtEstadoOrden',
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='estado_anterior_id',
+        related_name='cambios_desde'
+    )
+    estado_nuevo = models.ForeignKey(
+        'catalogos.CtEstadoOrden',
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='estado_nuevo_id',
+        related_name='cambios_hacia'
+    )
+    fecha_cambio = models.DateTimeField(
+        auto_now_add=True,
+        db_column='fecha_cambio'
+    )
+    responsable = models.ForeignKey(
+        'vendedores.Vendedor',  # Ahora sí existe la app vendedores
+        on_delete=models.PROTECT,
+        null=True,
+        db_column='responsable_id',
+        related_name='cambios_estado'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'historial_estados_orden'
+        ordering = ['-fecha_cambio']
+        verbose_name = 'Historial de Estado de Orden'
+        verbose_name_plural = 'Historial de Estados de Órdenes'
+
+    def __str__(self):
+        return f"Cambio de estado - Orden #{self.orden.codigo_orden}"
+
+
+class RegistroGarantia(models.Model):
+    orden_venta = models.OneToOneField(
+        OrdenVenta,
+        on_delete=models.PROTECT,
+        db_column='orden_venta_id',
+        related_name='garantia'
+    )
+    fecha_vigencia = models.DateTimeField(
+        null=True,
+        db_column='fecha_vigencia'
+    )
+    fecha_vencimiento = models.DateTimeField(
+        null=True,
+        db_column='fecha_vencimiento'
+    )
+    kilometraje_garantia = models.CharField(
+        max_length=50,
+        null=True,
+        db_column='kilometraje_garantia'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'registro_garantia'
+        verbose_name = 'Registro de Garantía'
+        verbose_name_plural = 'Registros de Garantías'
+
+    def __str__(self):
+        return f"Garantía - Orden #{self.orden_venta.codigo_orden}"
+
+
+class MediaAdjunto(models.Model):
+    tabla_referencia = models.CharField(
+        max_length=100,
+        db_column='tabla_referencia'
+    )
+    registro_id = models.BigIntegerField(
+        db_column='registro_id'
+    )
+    tipo_archivo = models.CharField(
+        max_length=50,
+        null=True,
+        db_column='tipo_archivo'
+    )
+    url_archivo = models.TextField(
+        db_column='url_archivo'
+    )
+    fecha_subida = models.DateTimeField(
+        auto_now_add=True,
+        db_column='fecha_subida'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'media_adjunto'
+        verbose_name = 'Archivo Adjunto'
+        verbose_name_plural = 'Archivos Adjuntos'
+
+    def __str__(self):
+        return f"Adjunto {self.id} - {self.tabla_referencia}"
