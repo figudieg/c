@@ -45,6 +45,12 @@
             class="transition-colors">
             Tracking
           </button>
+          <button
+            (click)="handleNavigation('sedes')"
+            [class]="currentView === 'sedes' ? 'text-orange-500' : 'text-gray-300 hover:text-white'"
+            class="transition-colors">
+            Sedes
+          </button>
         </ng-container>
 
         <button
@@ -94,6 +100,7 @@
         <button (click)="handleNavigation('sales')" class="block text-gray-300 hover:text-white py-2 w-full text-left">Ventas</button>
         <button (click)="handleNavigation('orders')" class="block text-gray-300 hover:text-white py-2 w-full text-left">Órdenes</button>
         <button (click)="handleNavigation('tracking')" class="block text-gray-300 hover:text-white py-2 w-full text-left">Tracking</button>
+        <button (click)="handleNavigation('sedes')" class="block text-gray-300 hover:text-white py-2 w-full text-left">Sedes</button>
       </ng-container>
 
       <button (click)="handleNavigation('home', 'contacto')" class="block w-full bg-orange-600 text-white px-6 py-2 rounded-full hover:bg-orange-700 transition-colors mt-2">Contacto</button>

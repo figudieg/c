@@ -18,6 +18,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { SalesComponent } from './pages/sales/sales.component';
 import { OrdersComponent } from './pages/orders/orders.component';
 import { TrackingComponent } from './pages/tracking/tracking.component';
+import { SedesComponent } from './pages/sedes/sedes.component';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { TrackingComponent } from './pages/tracking/tracking.component';
     SalesComponent,
     OrdersComponent,
     TrackingComponent,
+    SedesComponent,
   ],
   imports: [
     BrowserModule,

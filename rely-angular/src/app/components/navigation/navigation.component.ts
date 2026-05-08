@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type ViewType = 'home' | 'sales' | 'orders' | 'tracking';
+export type ViewType = 'home' | 'sales' | 'orders' | 'tracking' | 'sedes';
 
 @Component({
   standalone: false,

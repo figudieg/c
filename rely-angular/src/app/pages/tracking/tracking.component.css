@@ -1,0 +1,29 @@
+.input-field {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background-color: #111827;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  border-color: #ea580c;
+}
+
+.input-field::placeholder {
+  color: #6b7280;
+}
+
+.input-field:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+select.input-field option {
+  background-color: #111827;
+  color: #fff;
+}

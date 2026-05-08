@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { ApiClientService } from '../../services/api-client.service';
 
 interface VehicleData {
   price: number;
@@ -37,6 +38,8 @@ export class PurchaseComponent {
   @Input() isOpen = false;
   @Input() vehicleData?: VehicleData;
   @Output() closeModal = new EventEmitter<void>();
+
+  constructor(private api: ApiClientService) {}
 
   formData: FormData = { ...emptyForm };
   isSubmitted = false;
@@ -79,12 +82,8 @@ export class PurchaseComponent {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/ordenes/', {
+      const response = await this.api.apiFetch('/api/ordenes/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('rely_access')}`,
-        },
         body: JSON.stringify(dataToSend),
       });
 

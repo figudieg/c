@@ -188,7 +188,7 @@ export class SalesComponent implements OnInit, OnDestroy {
   private async cargarInventario(): Promise<void> {
     this.cargandoInventario = true;
     try {
-      this.vehiculos = await this.vehicleService.getInventario();
+      this.vehiculos = await this.vehicleService.getInventarioReservable();
       this.agruparPorVersion();
       console.log('✅ Inventario cargado:', this.vehiculos.length, 'vehículos');
     } catch (err) {
@@ -417,6 +417,14 @@ export class SalesComponent implements OnInit, OnDestroy {
     }
     
     return '#4B5563';
+  }
+
+  get esPreReservable(): boolean {
+    return !!this.vehiculoSeleccionado && [3, 4, 5].includes(this.vehiculoSeleccionado.estado);
+  }
+
+  get etiquetaAccion(): string {
+    return this.esPreReservable ? 'Pre-reservar Vehículo' : 'Registrar Venta';
   }
 
   get montoPorCuota(): number {

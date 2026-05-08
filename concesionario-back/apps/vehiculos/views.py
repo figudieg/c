@@ -9,12 +9,24 @@ class MarcaViewSet(viewsets.ModelViewSet):
     serializer_class = MarcaSerializer
 
 class ModeloViewSet(viewsets.ModelViewSet):
-    queryset = Modelo.objects.select_related('marca', 'tipo').all()
     serializer_class = ModeloSerializer
 
+    def get_queryset(self):
+        qs = Modelo.objects.select_related('marca', 'tipo').all()
+        marca_id = self.request.query_params.get('marca')
+        if marca_id:
+            qs = qs.filter(marca_id=marca_id)
+        return qs
+
 class VersionTrimViewSet(viewsets.ModelViewSet):
-    queryset = VersionTrim.objects.select_related('modelo__marca').all()
     serializer_class = VersionTrimSerializer
+
+    def get_queryset(self):
+        qs = VersionTrim.objects.select_related('modelo__marca').all()
+        modelo_id = self.request.query_params.get('modelo')
+        if modelo_id:
+            qs = qs.filter(modelo_id=modelo_id)
+        return qs
 
 class EquipamientoBaseViewSet(viewsets.ModelViewSet):
     queryset = EquipamientoBase.objects.all()
@@ -82,5 +94,24 @@ class VehiculoNuevoViewSet(viewsets.ModelViewSet):
         GET /api/vehiculos/inventario/disponibles/
         """
         queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='reservables')
+    def reservables(self, request):
+        """
+        Vehículos disponibles para compra (estado=1) o pre-reserva (estados 3, 4, 5).
+        Incluye info del lote (ETA, estado del lote).
+        GET /api/vehiculos/inventario/reservables/
+        """
+        queryset = VehiculoNuevo.objects.filter(
+            estado__in=[1, 3, 4, 5]
+        ).select_related(
+            'version__modelo__marca',
+            'ubicacion_fisica',
+            'estado',
+            'lote__estado_lote',
+        ).prefetch_related('version__equipamiento')
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

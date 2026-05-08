@@ -30,6 +30,7 @@ export class App implements OnInit, OnDestroy {
         if (url.startsWith('/ventas')) this.currentView = 'sales';
         else if (url.startsWith('/ordenes')) this.currentView = 'orders';
         else if (url.startsWith('/tracking')) this.currentView = 'tracking';
+        else if (url.startsWith('/sedes')) this.currentView = 'sedes';
         else this.currentView = 'home';
       });
 
@@ -38,6 +39,7 @@ export class App implements OnInit, OnDestroy {
     if (url.startsWith('/ventas')) this.currentView = 'sales';
     else if (url.startsWith('/ordenes')) this.currentView = 'orders';
     else if (url.startsWith('/tracking')) this.currentView = 'tracking';
+    else if (url.startsWith('/sedes')) this.currentView = 'sedes';
     else this.currentView = 'home';
 
     // Restore session
@@ -55,7 +57,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   handleViewChange(view: ViewType): void {
-    if (['sales', 'orders', 'tracking'].includes(view) && !this.isAuth) {
+    if (['sales', 'orders', 'tracking', 'sedes'].includes(view) && !this.isAuth) {
       this.isLoginOpen = true;
       return;
     }
@@ -64,6 +66,7 @@ export class App implements OnInit, OnDestroy {
       sales: '/ventas',
       orders: '/ordenes',
       tracking: '/tracking',
+      sedes: '/sedes',
     };
     this.router.navigate([routes[view]]);
   }
